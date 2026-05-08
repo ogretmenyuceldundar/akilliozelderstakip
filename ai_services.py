@@ -1,5 +1,4 @@
 import os
-import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,11 +11,6 @@ def generate_student_report(raw_notes: str, student_name: str, lesson_topic: str
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return f"SİSTEM UYARISI: GEMINI_API_KEY ortam değişkeni bulunamadı. Lütfen API anahtarınızı ayarlayın.\n\nTaslak Notlar: {raw_notes}"
-    
-    genai.configure(api_key=api_key)
-    
-    # En kararlı ve hızlı olan flash-latest takma adını kullanıyoruz
-    model = genai.GenerativeModel('gemini-flash-latest')
     
     prompt = f"""
     Sen profesyonel, kibar ve veli ile iletişim kurmakta usta bir öğretmensin. 
@@ -32,7 +26,22 @@ def generate_student_report(raw_notes: str, student_name: str, lesson_topic: str
     """
     
     try:
-        response = model.generate_content(prompt)
+        from google import genai
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
         return response.text
+    except ImportError:
+        # Eski kütüphane ile dene (fallback)
+        try:
+            import google.generativeai as genai_old
+            genai_old.configure(api_key=api_key)
+            model = genai_old.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            return f"Rapor oluşturulurken bir hata oluştu: {str(e)}"
     except Exception as e:
         return f"Rapor oluşturulurken bir hata oluştu: {str(e)}"
