@@ -1,0 +1,1 @@
+FROM python:3.11-slim\n\n# Set working directory\nWORKDIR /app\n\n# Install dependencies\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\n\n# Copy application code\nCOPY . .\n\n# Expose port\nEXPOSE 8000\n\n# Run the FastAPI app\nENV PYTHONUNBUFFERED=1\nCMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

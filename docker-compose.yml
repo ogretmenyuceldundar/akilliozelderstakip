@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tutoring_backend
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - ./database.db:/app/database.db  # persists SQLite DB; replace with external DB in production
+    # If using a DB service, add depends_on below
+    # depends_on:
+    #   - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tutoring_frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    # If you want nginx to serve on a custom subpath, adjust accordingly
+
+# Optional: Uncomment and configure a Postgres DB for production
+#  db:
+#    image: postgres:15-alpine
+#    container_name: tutoring_db
+#    environment:
+#      POSTGRES_USER: your_user
+#      POSTGRES_PASSWORD: your_password
+#      POSTGRES_DB: tutoring
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
+#    ports:
+#      - "5432:5432"
+#    restart: unless-stopped
+
+#volumes:
+#  pgdata:
