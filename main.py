@@ -4,14 +4,28 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from typing import List
 
-from database import create_db_and_tables, get_session
+from database import create_db_and_tables, get_session, engine
 from models import Teacher, TeacherCreate, TeacherRead, Student, StudentCreate, StudentRead, StudentUpdate, Lesson, LessonCreate, LessonRead, Report, ReportCreate, ReportRead, LessonUpdateStatus, PackagePurchase, ParentLogin
 from crud import create_lesson as crud_create_lesson
 from ai_services import generate_student_report
+from datetime import time
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
+    # Varsayılan öğretmen yoksa oluştur
+    with Session(engine) as session:
+        existing = session.get(Teacher, 1)
+        if not existing:
+            teacher = Teacher(
+                name="Yücel Dündar",
+                email="ogretmen@example.com",
+                hourly_rate=500,
+                working_hours_start=time(9, 0),
+                working_hours_end=time(22, 0)
+            )
+            session.add(teacher)
+            session.commit()
     yield
 
 app = FastAPI(title="Akıllı Özel Ders Yönetim Paneli", lifespan=lifespan)
